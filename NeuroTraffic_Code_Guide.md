@@ -697,10 +697,9 @@ Used by every page so that everything looks and reads the same:
 
 ### `views/0_home.py` — Home
 1. **Right now** (live) — zones in disruption and anomaly, subway lines with an alert, snapshot time; warns if the snapshot is over 10 minutes old.
-2. **Historical results 2022 – 2024** — zones, days, disrupted zone-days and their share.
-3. **Pages** — one link and one sentence per page.
-4. **How the system works** — the 8 steps from download to dashboard.
-5. **Data files** — every file the dashboard reads: found in HDFS or locally, size and last update (WebHDFS `GETFILESTATUS`).
+2. **Pages** — one link and one sentence per page.
+3. **How the system works** — the 8 steps from download to dashboard.
+4. **Data files** — every file the dashboard reads: found in HDFS or locally, size and last update (WebHDFS `GETFILESTATUS`).
 
 ### `views/1_live_monitor.py` — Live Monitor
 - Loads `latest.csv` and `source_status.json` (cache 5 s) and `graph_nodes.csv` (coordinates, names).

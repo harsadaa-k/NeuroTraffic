@@ -34,10 +34,6 @@ def load_live(use_hdfs):
     status = hdfs_helper.load_json(config.SOURCE_STATUS_JSON, config.HDFS_SOURCE_STATUS_JSON, use_hdfs=use_hdfs)
     return latest, status or {}
 
-@st.cache_data(ttl=300, show_spinner="Loading 2022 – 2024 history from HDFS…")
-def load_history(use_hdfs):
-    return hdfs_helper.load_dataframe(config.HISTORICAL_PARQUET, config.HDFS_HISTORICAL_PARQUET, use_hdfs=use_hdfs)
-
 
 # ── Right now ─────────────────────────────────────────────────────────
 latest, status = load_live(use_hdfs)
@@ -56,19 +52,6 @@ else:
     c2.metric("Zones with an anomaly", int((levels == "Anomaly").sum()), help="Anomaly score 0.50 – 0.80")
     c3.metric("Subway lines with an alert", len(alerted), help=", ".join(alerted) or "none")
     c4.metric("Snapshot (NYC time)", f"{snapshot:%H:%M:%S}", help=f"{age_min:.1f} minutes ago")
-
-# ── Historical results ────────────────────────────────────────────────
-hist = load_history(use_hdfs)
-ui.section("Historical results, 2022 – 2024",
-           "From the batch pipeline: every zone and every hour of three years, scored by z-scores and KMeans.",
-           "historical")
-if hist is not None:
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Taxi zones", hist["zone_id"].nunique())
-    c2.metric("Days analysed", f"{hist['date'].nunique():,}")
-    c3.metric("Zone-days with a disruption", f"{int(hist['is_anomaly'].sum()):,}",
-              help="Days on which a zone had at least one disrupted hour")
-    c4.metric("Share of zone-days", f"{hist['is_anomaly'].mean():.1%}")
 
 # ── Pages ─────────────────────────────────────────────────────────────
 ui.section("Pages")
