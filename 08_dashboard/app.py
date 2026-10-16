@@ -25,7 +25,6 @@ pages = [
     st.Page("views/5_network_map.py",  title="Network Map",  icon="🗺", url_path="network_map"),
     st.Page("views/3_explorer.py",     title="Explorer",     icon="📊", url_path="explorer"),
     st.Page("views/2_simulator.py",    title="Simulator",    icon="⚡", url_path="simulator"),
-    st.Page("views/4_analytics.py",    title="Analytics",    icon="🧠", url_path="analytics"),
 ]
 page = st.navigation(pages)
 

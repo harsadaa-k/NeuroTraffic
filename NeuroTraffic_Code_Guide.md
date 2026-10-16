@@ -89,8 +89,8 @@ The city is divided into **263 taxi zones** (official TLC zones). Almost everyth
  │   → HDFS output/latest.csv + live_history.csv ───┼────────────┤
  └──────────────────────────────────────────────────┘            ▼
                                                     08_dashboard (Streamlit)
-                                                    Home · Live Monitor · Simulator
-                                                    · Explorer · Analytics
+                                                    Home · Live Monitor · Network Map
+                                                    · Explorer · Simulator
 ```
 
 Everything big runs **inside Docker** (Hadoop + Spark). The dashboard and the live fetcher run **on Windows** and talk to HDFS over HTTP (WebHDFS).
@@ -506,7 +506,7 @@ Does what `NeuroTrafficApp full` does, but as a spark-shell script (no sbt build
 - **Label Propagation** — every node starts with its own label and repeatedly adopts the most common label among its neighbours; groups that trade lots of trips end up with the same label = a "community".
 - **In/out degree** — how many different places send trips to / receive trips from this node.
 
-These numbers become ML features and are shown in the dashboard (Analytics → Graph Analytics, and `page_rank` in the simulator).
+These numbers become ML features and are shown in the dashboard (PageRank drives the simulator and the GBT features).
 
 ---
 
@@ -686,7 +686,7 @@ The dashboard's HDFS client over WebHDFS:
 - `load_dataframe(local_path, hdfs_path, use_hdfs)` and `load_json(...)` — **try HDFS first, fall back to the local file**. Every page loads data through these.
 
 ### `app.py` — entry point and menu
-Defines the menu with `st.navigation`: Home, Live Monitor, Network Map, Explorer, Simulator, Analytics (each an `st.Page` with an icon and a URL such as `/live_monitor`). It also shows the **Read data from HDFS** switch, with the connection status, at the top of every page's sidebar, then runs the chosen page. The page files live in `views/`, not `pages/`, because Streamlit would otherwise also build its own automatic menu from a `pages/` folder.
+Defines the menu with `st.navigation`: Home, Live Monitor, Network Map, Explorer, Simulator (each an `st.Page` with an icon and a URL such as `/live_monitor`). It also shows the **Read data from HDFS** switch, with the connection status, at the top of every page's sidebar, then runs the chosen page. The page files live in `views/`, not `pages/`, because Streamlit would otherwise also build its own automatic menu from a `pages/` folder.
 
 ### `ui.py` — shared look and helpers
 Used by every page so that everything looks and reads the same:
@@ -725,11 +725,7 @@ Two tabs:
 - **Last 24 hours (live)** — from `live_history.csv` (cache 60 s): choose 1, 6 or 24 hours; the cutoff uses **New York time** because the data is in NY time; 1- or 5-minute averages of the average and highest zone score, plus the number of zones ≥ 0.50. Periods when the pipeline was not running show as gaps.
 - **History 2022 – 2024** — from `historical_predictions.parquet` (cache 10 min): date range and borough filter over the whole data; disrupted zones per day with a 7-day average; most disrupted zones (quiet zones such as parks and islands rank high because small changes in tiny traffic give large z-scores); share disrupted by weekday; the 15 most disrupted days; **CSV download** of the selection.
 
-### `views/4_analytics.py` — Analytics
-Reads `evaluation_metrics.json`, `feature_importance.csv`, `graph_nodes.csv` (cache 10 min):
-- A short box explaining what the model does and that its **labels come from the batch detector**, so the scores measure how well it reproduces that detector.
-- Accuracy, precision, recall and F1 **for the disruption class**, calculated from the confusion-matrix counts, plus AUC-ROC; training and test sizes.
-- Tabs: **Errors** (confusion matrix in plain words), **What the model relies on** (feature importance by input type, and why events and rain dominate), **Transport graph** (top zones by PageRank, map by community or borough, network numbers), **Model settings** (the real `train_gbt.scala` settings: 150 trees, depth 4, 23 inputs).
+The Analytics page (model metrics, feature importance, graph view) was removed from the dashboard; the model's results are presented in the review deck instead. The metric files it read (`evaluation_metrics.json`, `feature_importance.csv`) are still produced by `06_ml/train_gbt.scala`.
 
 ### `views/5_network_map.py` — Network Map
 One live map of every transport mode, drawn with **pydeck** (deck.gl):
@@ -781,7 +777,7 @@ docker compose up -d
 ```bash
 docker exec -it spark-master /spark/bin/spark-shell --master spark://spark-master:7077 --conf spark.ui.showConsoleProgress=false -i /project/07_streaming/live_pipeline.scala
 ```
-Then start the dashboard (see 08_dashboard). Pages: Home, Live Monitor, Network Map, Explorer, Simulator, Analytics. Run the fetcher and the pipeline in separate terminals.
+Then start the dashboard (see 08_dashboard). Pages: Home, Live Monitor, Network Map, Explorer, Simulator. Run the fetcher and the pipeline in separate terminals.
 
 **Web UIs:** NameNode http://localhost:9870 · DataNodes :9864 / :9865 / :9866 · Spark Master http://localhost:8080 · Spark job :4040 · Dashboard http://localhost:8501
 

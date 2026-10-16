@@ -77,7 +77,6 @@ PAGES = [
     ("views/5_network_map.py",  "🗺 Network Map",  "Subway lines, stations, Citi Bike docks and the links between them, live."),
     ("views/3_explorer.py",     "📊 Explorer",     "The last 24 hours of live scores, and three years of history by day and zone."),
     ("views/2_simulator.py",    "⚡ Simulator",    "What-if: pick a subway line and a time, see how a disruption could spread."),
-    ("views/4_analytics.py",    "🧠 Analytics",    "How well the GBT model works, which features matter, and the transport graph."),
 ]
 cols = st.columns(len(PAGES))
 for col, (path, label, desc) in zip(cols, PAGES):
